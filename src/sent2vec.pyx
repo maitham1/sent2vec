@@ -13,15 +13,6 @@ from libc.stdio cimport EOF
 
 cnp.import_array()
 
-cdef extern from "fasttext.h" namespace "fasttext":
-
-    cdef cppclass FastText:
-        FastText() except + 
-        void loadModel(const string&)
-        void textVector(string, vector[float]&)
-        void textVectors(vector[string]&, int, vector[float])#&)
-        int getDimension()
-
 
 cdef extern from "asvoid.h": 
      void *asvoid(vector[float] *buf)
@@ -65,6 +56,18 @@ cdef extern from "matrix.h" namespace "fasttext" nogil:
     void zero()
     void addRow(const Vector&, int64_t, real)
     real dotRow(const Vector&, int64_t) const
+
+
+cdef extern from "fasttext.h" namespace "fasttext":
+
+    cdef cppclass FastText:
+        FastText() except + 
+        void loadModel(const string&)
+        void textVector(string, vector[float]&)
+        void textVectors(vector[string]&, int, vector[float])#&)
+        int getDimension()
+        Matrix getEntireEmbedding()
+
 
 cdef class vector_wrapper: 
     cdef: 
