@@ -1,8 +1,12 @@
 import numpy as np
 cimport numpy as cnp 
 
+from libc.stdint cimport int32_t, int64_t
 from libcpp.string cimport string
 from libcpp.vector cimport vector
+from cython.operator cimport dereference as deref
+from libcpp.memory cimport shared_ptr, make_shared, unique_ptr
+from libc.stdio cimport EOF
 
 #from libc.stdlib cimport free
 #from cpython cimport PyObject, Py_INCREF
@@ -26,6 +30,41 @@ cdef extern from "asvoid.h":
 class stdvector_base: 
     pass 
 
+
+
+ctypedef float real
+
+
+cdef extern from "dictionary.h" namespace "fasttext" nogil:
+  cdef cppclass Dictionary:
+    int32_t nlabels() const
+    string getLabel(int32_t) const
+    int32_t nwords() const
+    int32_t getId(const string &) const
+    string getWord(int32_t) const
+    
+
+cdef extern from "vector.h" namespace "fasttext" nogil:
+  cdef cppclass Vector:
+    Vector(int64_t)
+    real *data_
+    void zero()
+    int64_t size() const
+    real& operator[](int64_t) const
+    void mul(real)
+    real norm() const
+    void addVector(const Vector &, real)
+
+cdef extern from "matrix.h" namespace "fasttext" nogil:
+  cdef cppclass Matrix:
+    Matrix()
+    Matrix(int64_t, int64_t)
+    int64_t m_
+    int64_t n_
+    real *data_
+    void zero()
+    void addRow(const Vector&, int64_t, real)
+    real dotRow(const Vector&, int64_t) const
 
 cdef class vector_wrapper: 
     cdef: 
@@ -60,6 +99,15 @@ cdef class vector_wrapper:
         base.vector_wrapper = self 
         return np.asarray(base) 
         
+
+
+
+cdef mat_to_numpy_array(const Matrix &mat):
+    cdef cnp.npy_intp shape[1]
+
+    shape[0] = <cnp.npy_intp>(mat.m_ * mat.n_)
+    arr = cnp.PyArray_SimpleNewFromData(1, shape, cnp.NPY_FLOAT32, <void *>mat.data_)
+    return arr.reshape(mat.m_, mat.n_).copy()
 
 cdef class Sent2vecModel:
 
@@ -96,3 +144,7 @@ cdef class Sent2vecModel:
 
     def embed_sentence(self, sentence, num_threads=1):
         return self.embed_sentences([sentence], num_threads)
+
+    @property
+    def numpy_normalized_vectors(self):
+      return mat_to_numpy_array(self._thisptr.getEntireEmbedding())

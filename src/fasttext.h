@@ -95,6 +95,7 @@ class FastText {
 
     void loadVectors(std::string);
     int getDimension() const;
+    Matrix getEntireEmbedding();
 };
 
 }

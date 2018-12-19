@@ -8,6 +8,7 @@
  */
 
 #include "fasttext.h"
+#include "matrix.h"
 
 #include <math.h>
 
@@ -872,5 +873,10 @@ void FastText::train(std::shared_ptr<Args> args) {
 int FastText::getDimension() const {
     return args_->dim;
 }
+
+Matrix FastText::getEntireEmbedding(){
+  return *input_;
+}
+
 
 }
