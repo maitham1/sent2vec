@@ -423,6 +423,11 @@ void FastText::textVectors() {
     if (args_->model == model_name::sent2vec){
       dict_->addNgrams(line, args_->wordNgrams);
     }
+
+    for (int32_t i = 0; i < line.size(); i++) {
+      std::cout << "LINE WORDS AFTER N_GRAM:  " << line[i] <<std::endl;
+    }
+    
     for (auto it = line.cbegin(); it != line.cend(); ++it) {
       vec.addRow(*input_, *it);
     }
